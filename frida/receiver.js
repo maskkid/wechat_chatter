@@ -38,16 +38,6 @@ function setReceiver() {
                 return
             }
 
-            let start = 0x1e;
-            let senderLen = currentPtr.add(start).readU8();
-            if (senderLen !== 0x14 && senderLen !== 0x13) {
-                start = 0x1d;
-                let senderLen = currentPtr.add(start).readU8();
-                if (senderLen !== 0x14 && senderLen !== 0x13) {
-                    return
-                }
-            }
-
             const x2 = this.context.x2.toInt32();
             console.log(" [+] currentPtr: ", hexdump(currentPtr, {
                 offset: 0,
@@ -65,7 +55,8 @@ function setReceiver() {
             const userContent = fields[5]
             const msgId = protobufVarintToNumberString(fields[6])
 
-            if (sender === "" || receiver === "" || content === "" || msgId === "") {
+            if (typeof sender !== "string" || sender === "" || typeof receiver !== "string" || receiver === "" ||
+                typeof content !== "string"  || content === "" || typeof msgId !== "string"  || msgId === "") {
                 console.log("字段缺失，无法解析 sender:" + sender + " receiver:" + receiver + hexdump(currentPtr, {
                     length: x2,
                     header: true,

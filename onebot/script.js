@@ -146,7 +146,7 @@ function getProtobufRawBytes(pBuffer, scanSize) {
 
     for (; i < uint8Array.length; i++) {
         if (uint8Array[i] === 0x60 && i + 10 <= uint8Array.length) {
-            finalResults.push(uint8Array.slice(i+1, i+10))
+            finalResults.push(uint8Array.slice(i + 1, i + 10))
         }
     }
 
@@ -258,7 +258,12 @@ function generateBytes(n) {
 // -------------------------全局变量分区-------------------------
 
 // 文本消息全局变量
-var textCallbackFuncAddr = baseAddr.add({{.textCallbackFuncAddr}});
+var textCallbackFuncAddr = baseAddr.add({
+{.
+    textCallbackFuncAddr
+}
+})
+;
 var protobufAddr = textCallbackFuncAddr.add(0x44);
 var patchTextProtobufAddr = textCallbackFuncAddr.add(0x20);
 var patchTextProtobufByte
@@ -268,21 +273,51 @@ var textCgiAddr = ptr(0);
 var sendTextMessageAddr = ptr(0);
 var textMessageAddr = ptr(0);
 var textProtoX1PayloadAddr = ptr(0);
-var sendMessageCallbackFunc = baseAddr.add({{.sendMessageCallbackFunc}});
+var sendMessageCallbackFunc = baseAddr.add({
+{.
+    sendMessageCallbackFunc
+}
+})
+;
 
 
 // 双方公共使用的地址
 var triggerX1Payload;
 var triggerX0;
-var req2bufEnterAddr = baseAddr.add({{.req2bufEnterAddr}});
-var req2bufExitAddr = baseAddr.add({{.req2bufExitAddr}});
-var sendFuncAddr = baseAddr.add({{.sendFuncAddr}});
+var req2bufEnterAddr = baseAddr.add({
+{.
+    req2bufEnterAddr
+}
+})
+;
+var req2bufExitAddr = baseAddr.add({
+{.
+    req2bufExitAddr
+}
+})
+;
+var sendFuncAddr = baseAddr.add({
+{.
+    sendFuncAddr
+}
+})
+;
 var insertMsgAddr = ptr(0);
 var sendMsgType = "";
-var buf2RespAddr = baseAddr.add({{.buf2RespAddr}});
+var buf2RespAddr = baseAddr.add({
+{.
+    buf2RespAddr
+}
+})
+;
 
 // 图片消息全局变量
-var imageCallbackFuncAddr = baseAddr.add({{.imageCallbackFuncAddr}});
+var imageCallbackFuncAddr = baseAddr.add({
+{.
+    imageCallbackFuncAddr
+}
+})
+;
 var imgProtobufAddr = imageCallbackFuncAddr.add(0x54);
 var patchImgProtobufFunc1 = imageCallbackFuncAddr.add(0x10);
 var patchImgProtobufFunc1Byte;
@@ -291,17 +326,69 @@ var patchImgProtobufFunc2Byte;
 var imgProtobufDeleteAddr = imageCallbackFuncAddr.add(0x6c);
 var imgProtobufDeleteAddrByte;
 
-var uploadImageAddr = baseAddr.add({{.uploadImageAddr}});
-var CndOnCompleteAddr = baseAddr.add({{.CndOnCompleteAddr}});
-var imgMessageCallbackFunc1 = baseAddr.add({{.imgMessageCallbackFunc1}});
-var uploadGetCallbackWrapperAddr = baseAddr.add({{.uploadGetCallbackWrapperAddr}});
-var uploadGetCallbackWrapperFuncAddr = baseAddr.add({{.uploadGetCallbackWrapperFuncAddr}});
-var uploadOnCompleteAddr = baseAddr.add({{.uploadOnCompleteAddr}});
-var uploadOnCompleteFuncAddr = baseAddr.add({{.uploadOnCompleteFuncAddr}});
-var downloadImagAddr = baseAddr.add({{.downloadImagAddr}});
-var startDownloadMedia = baseAddr.add({{.startDownloadMedia}})
-var downloadFileAddr = baseAddr.add({{.downloadFileAddr}})
-var downloadVideoAddr = baseAddr.add({{.downloadVideoAddr}})
+var uploadImageAddr = baseAddr.add({
+{.
+    uploadImageAddr
+}
+})
+;
+var CndOnCompleteAddr = baseAddr.add({
+{.
+    CndOnCompleteAddr
+}
+})
+;
+var imgMessageCallbackFunc1 = baseAddr.add({
+{.
+    imgMessageCallbackFunc1
+}
+})
+;
+var uploadGetCallbackWrapperAddr = baseAddr.add({
+{.
+    uploadGetCallbackWrapperAddr
+}
+})
+;
+var uploadGetCallbackWrapperFuncAddr = baseAddr.add({
+{.
+    uploadGetCallbackWrapperFuncAddr
+}
+})
+;
+var uploadOnCompleteAddr = baseAddr.add({
+{.
+    uploadOnCompleteAddr
+}
+})
+;
+var uploadOnCompleteFuncAddr = baseAddr.add({
+{.
+    uploadOnCompleteFuncAddr
+}
+})
+;
+var downloadImagAddr = baseAddr.add({
+{.
+    downloadImagAddr
+}
+})
+;
+var startDownloadMedia = baseAddr.add({
+{.
+    startDownloadMedia
+}
+})
+var downloadFileAddr = baseAddr.add({
+{.
+    downloadFileAddr
+}
+})
+var downloadVideoAddr = baseAddr.add({
+{.
+    downloadVideoAddr
+}
+})
 
 var downloadGlobalX0;
 var downloadFileX1 = ptr(0)
@@ -574,8 +661,7 @@ function attachSendTextProto() {
             const htmlUpperPart = [0x3C, 0x6D, 0x73, 0x67, 0x73, 0x6F, 0x75, 0x72, 0x63, 0x65, 0x3E]
             let atUserHeader = []
             if (atUserGlobal) {
-                atUserHeader = atUserHeader.concat([0x3C, 0x61, 0x74, 0x75, 0x73, 0x65, 0x72, 0x6c, 0x69, 0x73, 0x74, 0x3e]).
-                concat(stringToHexArray(atUserGlobal)).concat([0x3C, 0x2F, 0x61, 0x74, 0x75, 0x73, 0x65, 0x72, 0x6C, 0x69, 0x73, 0x74, 0x3E])
+                atUserHeader = atUserHeader.concat([0x3C, 0x61, 0x74, 0x75, 0x73, 0x65, 0x72, 0x6c, 0x69, 0x73, 0x74, 0x3e]).concat(stringToHexArray(atUserGlobal)).concat([0x3C, 0x2F, 0x61, 0x74, 0x75, 0x73, 0x65, 0x72, 0x6C, 0x69, 0x73, 0x74, 0x3E])
             }
             const htmlLowerPart = [0x3C, 0x61, 0x6C, 0x6E, 0x6F,
                 0x64, 0x65, 0x3E, 0x3C, 0x66, 0x72, 0x3E, 0x31,
@@ -592,9 +678,7 @@ function attachSendTextProto() {
                 htmlUpperPart.length + atUserHeader.length + htmlLowerPart.length)
 
             // 合并数组
-            const finalPayload = type.concat(valueLen).concat(receiverHeader).concat(receiverProto).concat(contentHeader).
-            concat(contentProto).concat(tsHeader).concat(tsBytes).concat(msgIdHeader).concat(msgId).concat(htmlHeader).concat(htmlUpperPart).
-            concat(atUserHeader).concat(htmlLowerPart);
+            const finalPayload = type.concat(valueLen).concat(receiverHeader).concat(receiverProto).concat(contentHeader).concat(contentProto).concat(tsHeader).concat(tsBytes).concat(msgIdHeader).concat(msgId).concat(htmlHeader).concat(htmlUpperPart).concat(atUserHeader).concat(htmlLowerPart);
 
             textProtoX1PayloadAddr.writeByteArray(finalPayload);
             this.context.x1 = textProtoX1PayloadAddr;
@@ -990,7 +1074,7 @@ function triggerUploadImg(receiver, md5, imagePath) {
         0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
         0x01, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, // 0x40
         0xD0, 0x72, 0x20, 0x89, 0x0B, 0x00, 0x00, 0x00, // 图片id // 0x48
-        0x24, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // 0x50
+        0x26, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // 0x50
         0x28, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x80,
         0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
         0x77, 0x78, 0x69, 0x64, 0x5F, 0x37, 0x77, 0x64, // 发送人 0x68
@@ -1207,16 +1291,6 @@ function setReceiver() {
                 return
             }
 
-            let start = 0x1e;
-            let senderLen = currentPtr.add(start).readU8();
-            if (senderLen !== 0x14 && senderLen !== 0x13) {
-                start = 0x1d;
-                let senderLen = currentPtr.add(start).readU8();
-                if (senderLen !== 0x14 && senderLen !== 0x13) {
-                    return
-                }
-            }
-
             const x2 = this.context.x2.toInt32();
             // console.log(" [+] currentPtr: ", hexdump(currentPtr, {
             //     offset: 0,
@@ -1234,12 +1308,9 @@ function setReceiver() {
             const userContent = fields[5]
             const msgId = protobufVarintToNumberString(fields[6])
 
-            if (sender === "" || receiver === "" || content === "" || msgId === "") {
-                console.log("字段缺失，无法解析 sender:" + sender + " receiver:" + receiver + hexdump(currentPtr, {
-                    length: x2,
-                    header: true,
-                    ansi: true,
-                }))
+            if (typeof sender !== "string" || sender === "" || typeof receiver !== "string" || receiver === "" ||
+                typeof content !== "string" || content === "" || typeof msgId !== "string" || msgId === "") {
+                console.log("字段缺失，无法解析 sender:" + sender + " receiver:" + receiver + " content:" + content, " msgId:" + msgId)
                 return;
             }
 

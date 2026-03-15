@@ -154,9 +154,10 @@ var uploadVideoX1 = ptr(0);
 var videoIdAddr = ptr(0);
 var videoPathAddr1 = ptr(0)
 
-var globalImageCdnKey = "3057020100044b30490201000204d0a7095d02032dd27902042dd56c71020469b3aa24042430313733373839312d323038382d343537392d393563382d6339353035663364643861300204051838010201000405004c54a100";
-var globalAesKey1 = "d65861f0926b34cd0439d44bced55843";
-var globalMd5Key = "8dd4755e12e052fa5647a883e6bf0783";
+var globalImageCdnKey = "";
+var globalAesKey1 = "";
+var globalMd5Key = "";
+var videoIdentity = ""
 
 // 发送消息的全局变量
 var taskIdGlobal = 0x0 // 最好比较大，不和原始的微信消息重复
@@ -751,10 +752,10 @@ function attachProto() {
 
             const senderHeader = [0x1A, 0x13];
             // sender 和 receiver 互换了，sender 是 wxid_ldftuhe36izg19
-            const sender = stringToHexArray("wxid_ldftuhe36izg19");
+            const sender = stringToHexArray(senderGlobal);
             const receiverHeader = [0x22, 0x13]
             // receiver 是 wxid_7wd1ece99f7i21
-            const receiver = stringToHexArray("wxid_7wd1ece99f7i21")
+            const receiver = stringToHexArray(receiverGlobal)
 
             const randomId1 = [0x28, 0xac, 0x73, 0x30, 0xac, 0x73, 0x3a, 0x04, 0x08, 0x00, 0x12, 0x00]
             const type1 = [0x40, 0xe8, 0xf2, 0x6f]
@@ -781,25 +782,28 @@ function attachProto() {
 
             const cdn2 = stringToHexArray(globalImageCdnKey)
 
-            const randomId6 = [0xA0, 0x01, 0xAC, 0x73, 0xA8, 0x01, 0xE8, 0x02, 0xB0, 0x01, 0xCB, 0x01, 0xBA, 0x01]
+            const randomId6 = [0xA0, 0x01, 0xAC, 0x73, 0xA8, 0x01, 0xE8, 0x02, 0xB0, 0x01, 0xCB, 0x01]
 
-            const aesKey1Header = [0x20]
-            const aesKey1 = stringToHexArray("af74113cef556244423ec1bb2c7d4027")
+            const aesKey1Header = [0xBA, 0x01, 0x20]
+            const aesKey1 = stringToHexArray(globalAesKey1)
 
-            const md5Header = [0xAA, 0x02, 0x20]
-            const me5Key = stringToHexArray("1f56e8e2af9fe27efe6bd531ebf9c1b3")
+            const md5Header = [0xd2, 0x01, 0x20]
+            const md5Key = stringToHexArray(globalMd5Key)
+
+            const md5Header1 = [0xAA, 0x02, 0x20]
+            const md5Key1 = stringToHexArray(videoIdentity)
 
             const randomId7 = [0xB0, 0x02, 0x00]
 
             const md5Key2Header = [0x82, 0x03, 0x20]
-            const md5Key2 = stringToHexArray("76d3cfca722c979b75215c4201fb9da2")
+            const md5Key2 = stringToHexArray(globalMd5Key)
 
             const cdn3Header = [0x8A, 0x03, 0xB2, 0x01]
             const cdn3 = stringToHexArray(globalImageCdnKey)
 
             const randomId8 = [0x92, 0x03, 0x20]
 
-            const md5Key3 = stringToHexArray("e7b7b9879746dc2db52369d00317b542")
+            const md5Key3 = stringToHexArray(globalAesKey1)
 
             var left0 = [
                 0x98, 0x03, 0xe8, 0xf2, 0x6f
@@ -807,8 +811,8 @@ function attachProto() {
 
             const finalPayload = type.concat(msgId, cpHeader, imageCp, randomId, sysHeader, sys, msgIdHeader, receiverMsgId,
                 senderHeader, sender, receiverHeader, receiver, randomId1, type1, randomId2, randomId3, randomId4, htmlHeader, html,
-                cdnHeader, cdn, aesKeyHeader, aesKey, randomId5, cdn2, randomId6, aesKey1Header, aesKey1, md5Header, me5Key, randomId7,
-                md5Key2Header, md5Key2, cdn3Header, cdn3, randomId8, md5Key3, left0)
+                cdnHeader, cdn, aesKeyHeader, aesKey, randomId5, cdn2, randomId6, aesKey1Header, aesKey1, md5Header, md5Key, md5Header1,
+                md5Key1, randomId7, md5Key2Header, md5Key2, cdn3Header, cdn3, randomId8, md5Key3, left0)
 
             videoProtoX1PayloadAddr.writeByteArray(finalPayload);
             console.log("[+] 视频Payload 已写入，长度: " + finalPayload.length);
@@ -841,7 +845,7 @@ function triggerUploadImg(receiver, md5, imagePath) {
         0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
         0x01, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, // 0x40
         0xD0, 0x72, 0x20, 0x89, 0x0B, 0x00, 0x00, 0x00, // 图片id // 0x48
-        0x24, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // 0x50
+        0x26, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // 0x50
         0x28, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x80,
         0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
         0x77, 0x78, 0x69, 0x64, 0x5F, 0x37, 0x77, 0x64, // 发送人 0x68
@@ -967,7 +971,7 @@ function triggerUploadVideo(receiver, md5, videoPath) {
         0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
         0x01, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, // 0x40
         0xD0, 0x72, 0x20, 0x89, 0x0B, 0x00, 0x00, 0x00, // 图片id // 0x48
-        0x24, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // 0x50
+        0x26, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // 0x50
         0x28, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x80,
         0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
         0x77, 0x78, 0x69, 0x64, 0x5F, 0x37, 0x77, 0x64, // 发送人 0x68
@@ -1058,20 +1062,20 @@ function triggerUploadVideo(receiver, md5, videoPath) {
     patchString(uploadAesKeyAddr, generateAESKey())
     patchString(videoPathAddr1, videoPath);
 
-    uploadImageX1.writeByteArray(payload);
-    uploadImageX1.writePointer(uploadFunc1Addr);
-    uploadImageX1.add(0x08).writePointer(uploadFunc2Addr);
-    uploadImageX1.add(0x48).writePointer(videoIdAddr);
-    uploadImageX1.add(0x68).writeUtf8String(receiver);
-    uploadImageX1.add(0xa8).writePointer(md5Addr);
-    uploadImageX1.add(0xe0).writePointer(videoPathAddr1);
-    uploadImageX1.add(0x110).writePointer(videoPathAddr1);
-    uploadImageX1.add(0x140).writePointer(videoPathAddr1);
-    uploadImageX1.add(0x1f8).writePointer(uploadAesKeyAddr);
+    uploadVideoX1.writeByteArray(payload);
+    uploadVideoX1.writePointer(uploadFunc1Addr);
+    uploadVideoX1.add(0x08).writePointer(uploadFunc2Addr);
+    uploadVideoX1.add(0x48).writePointer(videoIdAddr);
+    uploadVideoX1.add(0x68).writeUtf8String(receiver);
+    uploadVideoX1.add(0xa8).writePointer(md5Addr);
+    uploadVideoX1.add(0xe0).writePointer(videoPathAddr1);
+    uploadVideoX1.add(0x110).writePointer(videoPathAddr1);
+    uploadVideoX1.add(0x140).writePointer(videoPathAddr1);
+    uploadVideoX1.add(0x1f8).writePointer(uploadAesKeyAddr);
 
     const startUploadMedia = new NativeFunction(uploadImageAddr, 'int64', ['pointer', 'pointer']);
 
-    const result = startUploadMedia(uploadGlobalX0, uploadImageX1);
+    const result = startUploadMedia(uploadGlobalX0, uploadVideoX1);
     console.log("调用结果: " + result);
 }
 
@@ -1099,8 +1103,9 @@ function patchCdnOnComplete() {
             try {
                 const x2 = this.context.x2;
                 const currentFileId = x2.add(0x20).readPointer().readUtf8String();
-                const fileId = imageIdAddr.readUtf8String();
-                if (currentFileId !== fileId) {
+                const imageFileId = imageIdAddr.readUtf8String();
+                const videoFileId = videoIdAddr.readUtf8String()
+                if (currentFileId !== imageFileId && currentFileId !== videoFileId ) {
                     console.log("[-] CndOnComplete x2: " + x2 + " currentFileId: " + currentFileId + " fileId: " + fileId);
                     return
                 }
@@ -1108,9 +1113,10 @@ function patchCdnOnComplete() {
                 globalImageCdnKey = x2.add(0x60).readPointer().readUtf8String();
                 globalAesKey1 = x2.add(0x78).readPointer().readUtf8String();
                 globalMd5Key = x2.add(0x90).readPointer().readUtf8String();
+                videoIdentity = x2.add(0xf0).readPointer().readUtf8String();
                 const targetId = x2.add(0x40).readUtf8String();
                 console.log("X2" + x2 + "[+] globalImageCdnKey: " + globalImageCdnKey + " globalAesKey1: " + globalAesKey1 +
-                    " globalMd5Key: " + globalMd5Key);
+                    " globalMd5Key: " + globalMd5Key + " videoIdentity:" + videoIdentity);
                 send({
                     type: "finish",
                 })
@@ -1121,6 +1127,8 @@ function patchCdnOnComplete() {
                         type: "upload_finish",
                         target_id: targetId,
                     })
+                } else {
+                    console.error("cdnKey or aesKey or md5key 为空")
                 }
             } catch (e) {
                 console.log("[-] Memory access error at onEnter: " + e);
@@ -1135,9 +1143,10 @@ function attachGetCallbackFromWrapper() {
     Interceptor.attach(baseAddr.add(0x491348C), {
         onEnter: function (args) {
             const tmpFileId = this.context.x1.readPointer().readUtf8String();
-            const fileId = imageIdAddr.readUtf8String();
-            if (tmpFileId !== fileId) {
-                console.log("[+] GetCallbackFromWrapper tmpFileId: " + tmpFileId + " fileId: " + fileId);
+            const imageFileId = imageIdAddr.readUtf8String();
+            const videoFileId = videoIdAddr.readUtf8String()
+            if (tmpFileId !== imageFileId && tmpFileId !== videoFileId ) {
+                console.log("[+] GetCallbackFromWrapper tmpFileId: " + tmpFileId + " imageFileId: " + imageFileId + " videoFileId:" + videoFileId);
                 return
             }
 
@@ -1150,17 +1159,19 @@ function attachGetCallbackFromWrapper() {
     Interceptor.attach(baseAddr.add(0x4913A88), {
         onEnter: function (args) {
             const tmpFileId = this.context.x1.readPointer().readUtf8String();
-            const fileId = imageIdAddr.readUtf8String();
-            if (tmpFileId !== fileId) {
-                console.log("[+] OnComplete tmpFileId: " + tmpFileId + " fileId: " + fileId);
+            const imageFileId = imageIdAddr.readUtf8String();
+            const videoFileId = videoIdAddr.readUtf8String()
+            if (tmpFileId !== imageFileId && tmpFileId !== videoFileId ) {
+                console.log("[+] OnComplete tmpFileId: " + tmpFileId + " imageFileId: " + imageFileId + " videoFileId:" + videoFileId);
                 return
             }
 
-            console.log("[+] OnComplete x8: " + this.context.x8);
             uploadCallback.add(0x30).writePointer(baseAddr.add(0x36BB9C0));
             this.context.x8 = uploadCallback;
+            console.log("[+] OnComplete x8: " + this.context.x8);
         }
     })
+
 }
 
 setImmediate(attachGetCallbackFromWrapper);
