@@ -1553,14 +1553,19 @@ function triggerUploadVideo(receiver, md5, videoPath) {
 function attachUploadMedia() {
     Interceptor.attach(uploadImageAddr.add(0x10), {
         onEnter: function (args) {
-            uploadGlobalX0 = this.context.x0;
-            const selfId = this.context.x1.add(0x68).readUtf8String();
-            const filePath = this.context.x1.add(0xe0).readPointer().readUtf8String();
-            send({
-                type: "upload",
-                self_id: selfId,
-            })
-            console.log("UploadMedia x0: " + uploadGlobalX0 + " filePath: " + filePath + " selfId: " + selfId);
+            try {
+                uploadGlobalX0 = this.context.x0;
+                const selfId = this.context.x1.add(0x68).readUtf8String();
+                const filePath = this.context.x1.add(0xe0).readPointer().readUtf8String();
+                send({
+                    type: "upload",
+                    self_id: selfId,
+                })
+                console.log("UploadMedia x0: " + uploadGlobalX0 + " filePath: " + filePath + " selfId: " + selfId);
+            } catch (e) {
+                console.log("[-] attachUploadMedia error: " + e);
+                uploadGlobalX0 = this.context.x0;
+            }
         }
     })
 }
@@ -1647,33 +1652,41 @@ setImmediate(patchCdnOnComplete)
 function attachGetCallbackFromWrapper() {
     Interceptor.attach(uploadGetCallbackWrapperAddr, {
         onEnter: function (args) {
-            const tmpFileId = this.context.x1.readPointer().readUtf8String();
-            const imageFileId = imageIdAddr.readUtf8String();
-            const videoFileId = videoIdAddr.readUtf8String()
-            if (tmpFileId !== imageFileId && tmpFileId !== videoFileId) {
-                console.log("[+] GetCallbackFromWrapper tmpFileId: " + tmpFileId + " imageFileId: " + imageFileId + " videoFileId:" + videoFileId);
-                return
-            }
+            try {
+                const tmpFileId = this.context.x1.readPointer().readUtf8String();
+                const imageFileId = imageIdAddr.readUtf8String();
+                const videoFileId = videoIdAddr.readUtf8String()
+                if (tmpFileId !== imageFileId && tmpFileId !== videoFileId) {
+                    console.log("[+] GetCallbackFromWrapper tmpFileId: " + tmpFileId + " imageFileId: " + imageFileId + " videoFileId:" + videoFileId);
+                    return
+                }
 
-            uploadCallback.add(0x10).writePointer(uploadGetCallbackWrapperFuncAddr);
-            this.context.x8 = uploadCallback;
-            console.log("[+] GetCallbackFromWrapper x8: " + this.context.x8);
+                uploadCallback.add(0x10).writePointer(uploadGetCallbackWrapperFuncAddr);
+                this.context.x8 = uploadCallback;
+                console.log("[+] GetCallbackFromWrapper x8: " + this.context.x8);
+            } catch (e) {
+                console.log("[-] GetCallbackFromWrapper error: " + e);
+            }
         }
     })
 
     Interceptor.attach(uploadOnCompleteAddr, {
         onEnter: function (args) {
-            const tmpFileId = this.context.x1.readPointer().readUtf8String();
-            const imageFileId = imageIdAddr.readUtf8String();
-            const videoFileId = videoIdAddr.readUtf8String()
-            if (tmpFileId !== imageFileId && tmpFileId !== videoFileId) {
-                console.log("[+] OnComplete tmpFileId: " + tmpFileId + " imageFileId: " + imageFileId + " videoFileId:" + videoFileId);
-                return
-            }
+            try {
+                const tmpFileId = this.context.x1.readPointer().readUtf8String();
+                const imageFileId = imageIdAddr.readUtf8String();
+                const videoFileId = videoIdAddr.readUtf8String()
+                if (tmpFileId !== imageFileId && tmpFileId !== videoFileId) {
+                    console.log("[+] OnComplete tmpFileId: " + tmpFileId + " imageFileId: " + imageFileId + " videoFileId:" + videoFileId);
+                    return
+                }
 
-            uploadCallback.add(0x30).writePointer(uploadOnCompleteFuncAddr);
-            this.context.x8 = uploadCallback;
-            console.log("[+] OnComplete x8: " + this.context.x8);
+                uploadCallback.add(0x30).writePointer(uploadOnCompleteFuncAddr);
+                this.context.x8 = uploadCallback;
+                console.log("[+] OnComplete x8: " + this.context.x8);
+            } catch (e) {
+                console.log("[-] OnComplete error: " + e);
+            }
         }
     })
 }
