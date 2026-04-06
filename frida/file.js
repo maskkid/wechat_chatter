@@ -161,6 +161,13 @@ var uploadVideoX1 = ptr(0);
 var videoIdAddr = ptr(0);
 var videoPathAddr1 = ptr(0)
 
+// 存储非图片/视频文件的CDN上传信息
+var fileCdnInfo = {
+    cdnKey: "",
+    aesKey: "",
+    md5Key: ""
+};
+
 // -------------------------上传队列 (解决并发问题)-------------------------
 // 图片上传完成队列 - 存储 {cdnKey, aesKey, md5Key, targetId}
 var imageUploadQueue = [];
@@ -784,7 +791,7 @@ function attachVideoProto() {
                 console.log(`[+] 拦截到非目标 currTaskId: ${currTaskId} taskIdGlobal: ${taskIdGlobal}`);
                 console.log("[+] 视频寄存器修改完成: X1=" + this.context.x1 + ", X2=" + this.context.x2, hexdump(this.context.x1, {
                     offset: 0,
-                    length: 1028,
+                    length: 1128,
                     header: true,
                     ansi: true
                 }));
@@ -810,22 +817,22 @@ function attachVideoProto() {
                 return;
             }
 
-            const type = [0x0A, 0x3f, 0x0A, 0x01, 0x00]
+            const type = [0x0A, 0x40, 0x0A, 0x01, 0x00]
             const msgId = [0x10].concat(generateRandom5ByteVarint())
             const cpHeader = [0x1A, 0x10]
 
             const randomId = [0x20, 0xAF, 0xAC, 0x90, 0x93, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x01]
             const sysHeader = [0x2A, 0x15]
             // UnifiedPCMac 26 arm64
-            const sys = [0x55, 0x6E, 0x69, 0x66, 0x69, 0x65, 0x64, 0x50, 0x43, 0x4D, 0x61, 0x63, 0x20, 0x32, 0x36, 0x20, 0x61, 0x72, 0x6D, 0x36, 0x34]
+            const sys = [0x55, 0x6E, 0x69, 0x66, 0x69, 0x65, 0x64, 0x50, 0x43, 0x4D, 0x61, 0x63, 0x20, 0x32, 0x36, 0x20, 0x61, 0x72, 0x6D, 0x36, 0x34, 0x30, 0x9b, 0x01]
 
             // 注意：这里 sender 和 receiver 互换了
             const receiverMsgId = stringToHexArray(targetId).concat([0x5F])
                 .concat(stringToHexArray(Math.floor(Date.now() / 1000).toString()))
-                .concat([0x5F, 0x31, 0x36, 0x30, 0x5F, 0x78, 0x77, 0x65, 0x63, 0x68, 0x61, 0x74, 0x5F, 0x31]);
+                .concat([0x5F, 0x39, 0x5F, 0x78, 0x77, 0x65, 0x63, 0x68, 0x61, 0x74, 0x5F, 0x31]);
 
             // 0x81, 0x01 是 tag，0x12, 0x2b 是长度=43
-            const msgIdHeader = [0x30, 0x76, 0x12, receiverMsgId.length]
+            const msgIdHeader = [0x12, receiverMsgId.length]
 
             const senderHeader = [0x1A, senderGlobal.length];
             // sender 和 receiver 互换了，sender 是 wxid_ldftuhe36izg19
@@ -850,22 +857,22 @@ function attachVideoProto() {
 
             const cdnHeader = [0x82, 0x01, 0xb2, 0x01]
             // 3057 开头的cdn key
-            const cdn = stringToHexArray(cdnKey);
+            const cdn = stringToHexArray(fileCdnInfo.cdnKey);
 
             const aesKeyHeader = [0x8A, 0x01, 0x20]
-            const aesKeyBytes = stringToHexArray(aesKey)
+            const aesKeyBytes = stringToHexArray(fileCdnInfo.aesKey)
 
             const randomId5 = [0x90, 0x01, 0x01, 0x9A, 0x01, 0xB2, 0x01]
 
-            const cdn2 = stringToHexArray(cdnKey)
+            const cdn2 = stringToHexArray(fileCdnInfo.cdnKey)
 
             const randomId6 = [0xA0, 0x01, 0xAC, 0x73, 0xA8, 0x01, 0xE8, 0x02, 0xB0, 0x01, 0xCB, 0x01]
 
             const aesKey1Header = [0xBA, 0x01, 0x20]
-            const aesKey1 = stringToHexArray(aesKey)
+            const aesKey1 = stringToHexArray(fileCdnInfo.aesKey)
 
             const md5Header = [0xd2, 0x01, 0x20]
-            const md5KeyBytes = stringToHexArray(md5Key)
+            const md5KeyBytes = stringToHexArray(fileCdnInfo.md5Key)
 
             const md5Header1 = [0xAA, 0x02, 0x20]
             const md5Key1 = stringToHexArray(videoId)
@@ -875,7 +882,7 @@ function attachVideoProto() {
             const md5Key2Header = [0x82, 0x03, 0x20]
             const md5Key2 = stringToHexArray(md5Key)
 
-            const cdn3Header = [0x8A, 0x03, 0xB2, 0x01]
+            const cdn3Header = [0x8A, 0x03, 0xF0, 0x01]
             const cdn3 = stringToHexArray(cdnKey)
 
             const randomId8 = [0x92, 0x03, 0x20]
@@ -1183,8 +1190,22 @@ function patchCdnOnComplete() {
                 const imageFileId = imageIdAddr.readUtf8String();
                 const videoFileId = videoIdAddr.readUtf8String()
                 if (currentFileId !== imageFileId && currentFileId !== videoFileId) {
+					const cdnKey = x2.add(0x60).readPointer().readUtf8String();
+					const aesKey = x2.add(0x78).readPointer().readUtf8String();
+					const md5Key = x2.add(0x90).readPointer().readUtf8String();
+
+					// 存储到全局变量
+					if (fileCdnInfo.cdnKey === "") {
+						fileCdnInfo.cdnKey = cdnKey;
+						fileCdnInfo.aesKey = aesKey;
+						fileCdnInfo.md5Key = md5Key;
+					}
+
+					const videoId = x2.add(0xf0).readPointer().readUtf8String();
+
                     console.log("[-] CndOnComplete x2: " + x2 + " currentFileId: " + currentFileId +
-                        " imageFileId: " + imageFileId + " videoFileId:" + videoFileId);
+                        " imageFileId: " + imageFileId + " videoFileId:" + videoFileId + " cdnKey:" + cdnKey + " aesKey: " + aesKey
+					    + " md5Key: " + md5Key + " videoId:" + videoId);
                     return
                 }
 
